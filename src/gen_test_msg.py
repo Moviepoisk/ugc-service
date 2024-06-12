@@ -12,7 +12,7 @@ def generate_data(index):
     }
 
 def send_request(data):
-    url = "http://localhost:5000/click"
+    url = "http://0.0.0.0:5000/click"
     headers = {"Content-Type": "application/json"}
     response = requests.post(url, headers=headers, json=data)
     return response

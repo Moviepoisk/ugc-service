@@ -4,17 +4,13 @@ from asynch import connect
 import json
 from datetime import datetime, timezone
 
+from schema import SQL_CREATE_TABLE_CLICK, SQL_INSERT_INTO_TABLE_CLICK
+
+
 async def create_clickhouse_client():
     client = await connect('clickhouse://default:@localhost/default')
     async with client.cursor() as cursor:
-        await cursor.execute('''
-            CREATE TABLE IF NOT EXISTS events (
-                user_id String,
-                event_time DateTime,
-                event_data String
-            ) ENGINE = MergeTree()
-            ORDER BY (event_time, user_id)
-        ''')
+        await cursor.execute(SQL_CREATE_TABLE_CLICK)
     return client
 
 async def consume_messages(consumer, buffer, messages):
@@ -40,7 +36,7 @@ async def insert_data_periodically(cursor, buffer, consumer, messages):
         if buffer:
             print(f"Inserting {len(buffer)} messages into ClickHouse.")
             await cursor.execute(
-                'INSERT INTO events (user_id, event_time, event_data) VALUES',
+                SQL_INSERT_INTO_TABLE_CLICK,
                 buffer
             )
             buffer.clear()

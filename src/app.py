@@ -1,22 +1,24 @@
 import asyncio
 from quart import Quart, request, jsonify
 from aiokafka import AIOKafkaProducer
-from pydantic import BaseModel, ValidationError
-import json
+from pydantic import ValidationError
+
+from schema import ClickData
 
 app = Quart(__name__)
 
-class ClickData(BaseModel):
-    user_id: str
-    timestamp: str
-    item_id: str
 
 producer = None
 
 @app.before_serving
 async def start_producer():
     global producer
-    producer = AIOKafkaProducer(bootstrap_servers='localhost:9094')
+    # Исправленная конфигурация Kafka Producer
+    producer_config = {
+        'bootstrap_servers': '127.0.0.1:9094',  # Исправлено с 'bootstrap.servers' на 'bootstrap_servers'
+        'acks': 'all'  # Настройка свойства acks
+    }
+    producer = AIOKafkaProducer(**producer_config)
     await producer.start()
 
 @app.after_serving
