@@ -20,7 +20,7 @@ async def consume_messages(consumer, buffer, messages):
             if message_value.strip():  # Проверяем, что сообщение не пустое
                 try:
                     data = json.loads(message_value)
-                    buffer.append((data['user_id'], data['timestamp'], data['item_id']))
+                    buffer.append((data['user_id'], data['timestamp']))
                     messages.append(msg)  # Добавляем сообщение в список для последующего подтверждения
                     print(f"Buffered message: {data}")
                 except json.JSONDecodeError as e:
