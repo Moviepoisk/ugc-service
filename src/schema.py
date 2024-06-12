@@ -13,12 +13,12 @@ SQL_CREATE_TABLE_CLICK = """
             user_id UUID,
             event_time DateTime,
         ) ENGINE = MergeTree()
-        ORDER BY (user_id, event_time)
+        ORDER BY (event_time, user_id)
+    """
+SQL_INSERT_TABLE_CLICK = """
+    INSERT INTO events (user_id, event_time, event_data) VALUES
     """
 
-SQL_INSERT_INTO_TABLE_CLICK = """
-    INSERT INTO click (user_id, event_time) VALUES
-"""
 
 class QaChangeData(BaseModel):
     user_id: UUID

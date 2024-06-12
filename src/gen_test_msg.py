@@ -8,7 +8,6 @@ def generate_data(index):
     return {
         "user_id": f"user_{index}",
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "item_id": f"item_{index}"
     }
 
 def send_request(data):
