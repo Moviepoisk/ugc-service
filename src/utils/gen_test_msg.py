@@ -3,10 +3,25 @@ import json
 from datetime import datetime, timezone
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import random
 
-def generate_data(index):
+test_user_ids = [
+    '87f5b737-19ab-4059-bc59-746bddb6b6b0',
+    '51a7bbb3-5b3f-47e6-885e-6b88268bf717',
+    '1d1ba311-8547-4fb2-9528-543cdac8ac3a',
+    '352f0762-07ce-4eb8-8026-16acc6f4614c',
+    '8f1c2ca5-b521-4531-a341-c3a38434f8e1',
+    '794d9ee7-da10-463f-a9ab-7d0b88596a71',
+    '3eca87c2-f13b-44db-ac5d-b5c724fe0c93',
+    '04f5cc9c-8413-4601-a441-742bc42a53df',
+    '02c53f0f-4e84-4bca-9577-780c03652f2d',
+    '8881d51e-e7e0-4f2d-b8fd-33dbbd92778f'
+]
+
+def generate_data():
+    user_id = random.choice(test_user_ids)
     return {
-        "user_id": f"user_{index}",
+        "user_id": user_id,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -17,7 +32,7 @@ def send_request(data):
     return response
 
 def task(index):
-    data = generate_data(index)
+    data = generate_data()
     response = send_request(data)
     if response.status_code != 200:
         print(f"Request {index} failed: {response.text}")

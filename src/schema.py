@@ -15,7 +15,7 @@ SQL_CREATE_TABLE_CLICK = """
         ) ENGINE = MergeTree()
         ORDER BY (event_time, user_id)
     """
-SQL_INSERT_TABLE_CLICK = """
+SQL_INSERT_INTO_TABLE_CLICK = """
     INSERT INTO events (user_id, event_time, event_data) VALUES
     """
 
