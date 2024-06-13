@@ -16,7 +16,7 @@ SQL_CREATE_TABLE_CLICK = """
         ORDER BY (event_time, user_id)
     """
 SQL_INSERT_INTO_TABLE_CLICK = """
-    INSERT INTO events (user_id, event_time, event_data) VALUES
+    INSERT INTO click (user_id, event_time) VALUES
     """
 
 
