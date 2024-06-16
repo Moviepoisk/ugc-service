@@ -1,12 +1,13 @@
-from pydantic import BaseModel
-from uuid import UUID
 import json
-from pydantic import ValidationError
+from uuid import UUID
+
+from pydantic import BaseModel, ValidationError
 
 
 class ClickData(BaseModel):
     user_id: UUID
     timestamp: str
+
 
 SQL_CREATE_TABLE_CLICK = """
     CREATE TABLE IF NOT EXISTS click (
@@ -24,13 +25,16 @@ class QaChangeData(BaseModel):
     user_id: UUID
     timestamp: str
 
+
 class PageData(BaseModel):
     user_id: UUID
     timestamp: str
 
+
 class Finish(BaseModel):
     user_id: UUID
     timestamp: str
+
 
 class Search(BaseModel):
     user_id: UUID
