@@ -22,10 +22,14 @@ async def consume_messages(consumer, buffer, messages):
                 try:
                     data = json.loads(message_value)
                     buffer.append((data["user_id"], data["timestamp"]))
-                    messages.append(msg)  # Добавляем сообщение в список для последующего подтверждения
+                    messages.append(
+                        msg
+                    )  # Добавляем сообщение в список для последующего подтверждения
                     print(f"Buffered message: {data}")
                 except json.JSONDecodeError as e:
-                    print(f"Ошибка декодирования JSON: {e} - Содержимое: {message_value}")
+                    print(
+                        f"Ошибка декодирования JSON: {e} - Содержимое: {message_value}"
+                    )
                     continue
 
 
@@ -42,7 +46,10 @@ async def insert_data_periodically(cursor, buffer, consumer, messages):
             print(f"Data inserted at {current_time}")
 
             # Подтверждение смещений после успешной вставки данных
-            offsets = {TopicPartition(msg.topic, msg.partition): msg.offset + 1 for msg in messages}
+            offsets = {
+                TopicPartition(msg.topic, msg.partition): msg.offset + 1
+                for msg in messages
+            }
             await consumer.commit(offsets)
             messages.clear()
             print("Offsets committed.")
@@ -63,8 +70,12 @@ async def consume_and_insert():
     messages = []
 
     async with clickhouse_client.cursor() as cursor:
-        consumer_task = asyncio.create_task(consume_messages(consumer, buffer, messages))
-        insert_task = asyncio.create_task(insert_data_periodically(cursor, buffer, consumer, messages))
+        consumer_task = asyncio.create_task(
+            consume_messages(consumer, buffer, messages)
+        )
+        insert_task = asyncio.create_task(
+            insert_data_periodically(cursor, buffer, consumer, messages)
+        )
 
         await asyncio.gather(consumer_task, insert_task)
 

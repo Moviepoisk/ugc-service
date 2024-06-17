@@ -1,25 +1,20 @@
-from aiokafka import AIOKafkaProducer
 from quart import Quart
-from src.api import v1_router
-from src.core.config import settings
-
-producer: AIOKafkaProducer | None = None
+from src.api.v1.endpoints import v1_router
+from src.core.producer import start_producer, stop_producer
 
 app = Quart(__name__)
-app.register_blueprint(v1_router)
+app.register_blueprint(v1_router, url_prefix="/api/v1")
 
 
 @app.before_serving
-async def start_producer():
-    global producer
-    producer = AIOKafkaProducer(bootstrap_servers=settings.kafka_bootstrap_servers, acks=settings.kafka_acks)
-    await producer.start()
+async def startup():
+    await start_producer()
 
 
 @app.after_serving
-async def stop_producer():
-    await producer.stop()
+async def cleanup():
+    await stop_producer()
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0", port=5000)  # Сервер будет слушать на всех интерфейсах

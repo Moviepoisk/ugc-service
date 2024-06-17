@@ -1,21 +1,13 @@
-# INFRA
-
-docker compose up kafka-0 kafka-1 kafka-2 kafka-ui zookeeper clickhouse-node1 clickhouse-node2 clickhouse-node3 clickhouse-node4
-
-
-# init kafka создание топиков
-python -m create_topic user_clicks 3 2
-
-
-# ugc-service в отдельном терминале
-python -m app
+# Запуск
+docker compose up 
 
 # etl в отдельном терминале
+cd /etl/src/
 python -m etl
 
-
-# тест api запись сообщения 
-curl -X POST http://localhost:5000/click -H "Content-Type: application/json" -d '{"user_id": "123", "timestamp": "2021-06-01T12:00:00"}'
+# тест api запись сообщения пример
+curl -X POST http://localhost:5000/api/v1/click -H "Content-Type: application/json" -d '{"user_id": "87f5b737-19ab-4059-bc59-746bddb6b6b0", "timestamp": "2021-06-01T12:00:00"}'
 
 # тест api запись сообщения можно через скрипт
-python -m gen_test_msg
+cd /service/src/commands
+python -m benchmark

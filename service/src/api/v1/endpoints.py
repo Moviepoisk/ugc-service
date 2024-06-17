@@ -1,30 +1,47 @@
-from quart import request
-from src.api import v1_router
-from src.api.v1 import action
+from quart import request, Blueprint
+from src.api.v1.action import action
 from src.core.config.base import KafkaTopic
 from src.schemas.base import Click, CustomEvent, Film, Page, QualityChange
+from src.core.producer import get_producer
+
+v1_router = Blueprint("v1", __name__)
 
 
 @v1_router.route("/click", methods=["POST"])
 async def click():
-    await action(data=await request.get_json(), schema=Click, topic=KafkaTopic.CLICK)
+    data = await request.get_json()
+    producer = get_producer()
+    result = await action(producer, data, Click, KafkaTopic.CLICK)
+    return result
 
 
 @v1_router.route("/quality", methods=["POST"])
 async def quality():
-    await action(data=await request.get_json(), schema=QualityChange, topic=KafkaTopic.QUALITY_CHANGE)
+    data = await request.get_json()
+    producer = get_producer()
+    result = await action(producer, data, QualityChange, KafkaTopic.QUALITY_CHANGE)
+    return result
 
 
 @v1_router.route("/event", methods=["POST"])
 async def event():
-    await action(data=await request.get_json(), schema=CustomEvent, topic=KafkaTopic.CUSTOM_EVENT)
+    data = await request.get_json()
+    producer = get_producer()
+    result = await action(producer, data, CustomEvent, KafkaTopic.CUSTOM_EVENT)
+    return result
 
 
 @v1_router.route("/film", methods=["POST"])
 async def film():
-    await action(data=await request.get_json(), schema=Film, topic=KafkaTopic.FILM)
+    data = await request.get_json()
+    producer = get_producer()
+    result = await action(producer, data, Film, KafkaTopic.FILM)
+    return result
 
 
 @v1_router.route("/page", methods=["POST"])
 async def page():
-    await action(data=await request.get_json(), schema=Page, topic=KafkaTopic.PAGE)
+    data = await request.get_json()
+    producer = get_producer()
+    result = await action(producer, data, Page, KafkaTopic.PAGE)
+    return result

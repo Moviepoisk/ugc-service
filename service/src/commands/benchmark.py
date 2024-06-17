@@ -28,7 +28,7 @@ def generate_data():
 
 
 def send_request(data):
-    url = "http://0.0.0.0:5000/api/v1/click"
+    url = "http://localhost:5000/api/v1/click"
     headers = {"Content-Type": "application/json"}
     response = requests.post(url, headers=headers, json=data)
     return response

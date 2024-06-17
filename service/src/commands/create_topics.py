@@ -5,10 +5,24 @@ from src.core.config.base import KafkaTopic
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Create Kafka topics with specified parameters.")
-    parser.add_argument("--bootstrap-servers", type=str, required=True, help="Kafka bootstrap servers")
-    parser.add_argument("--num-partitions", type=int, required=True, help="Number of partitions for the topics")
-    parser.add_argument("--replication-factor", type=int, required=True, help="Replication factor for the topics")
+    parser = argparse.ArgumentParser(
+        description="Create Kafka topics with specified parameters."
+    )
+    parser.add_argument(
+        "--bootstrap-servers", type=str, required=True, help="Kafka bootstrap servers"
+    )
+    parser.add_argument(
+        "--num-partitions",
+        type=int,
+        required=True,
+        help="Number of partitions for the topics",
+    )
+    parser.add_argument(
+        "--replication-factor",
+        type=int,
+        required=True,
+        help="Replication factor for the topics",
+    )
     return parser.parse_args()
 
 
@@ -17,7 +31,11 @@ def main(args):
 
     admin_client = AdminClient({"bootstrap.servers": args.bootstrap_servers})
     topics = [
-        NewTopic(topic=topic, num_partitions=args.num_partitions, replication_factor=args.replication_factor)
+        NewTopic(
+            topic=topic,
+            num_partitions=args.num_partitions,
+            replication_factor=args.replication_factor,
+        )
         for topic in KafkaTopic
     ]
 

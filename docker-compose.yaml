@@ -15,5 +15,7 @@ services:
     logging: *default-logging
     volumes:
       - ./service/src:/opt/src
+    ports:
+      - "5000:5000"
     env_file:
       - .env
