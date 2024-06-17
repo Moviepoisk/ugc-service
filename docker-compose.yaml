@@ -1,0 +1,19 @@
+x-default-logging: &default-logging
+  options:
+    max-size: "10m"
+    max-file: "3"
+  driver: json-file
+
+include:
+  - ./docker-compose-infra.yaml
+
+services:
+  ugc_service:
+    build:
+      context: ./service
+    container_name: UGCService
+    logging: *default-logging
+    volumes:
+      - ./service/src:/opt/src
+    env_file:
+      - .env
