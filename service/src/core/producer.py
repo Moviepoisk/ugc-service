@@ -6,9 +6,7 @@ producer: AIOKafkaProducer | None = None
 
 async def start_producer():
     global producer
-    producer = AIOKafkaProducer(
-        bootstrap_servers=settings.kafka_bootstrap_servers, acks=settings.kafka_acks
-    )
+    producer = AIOKafkaProducer(bootstrap_servers=settings.kafka_host, acks=settings.kafka_acks)
     await producer.start()
 
 

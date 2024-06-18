@@ -26,6 +26,7 @@ endpoints = [
     "http://localhost:5000/api/v1/page",
 ]
 
+
 def generate_data():
     user_id = random.choice(test_user_ids)
     return {
@@ -33,10 +34,12 @@ def generate_data():
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
+
 def send_request(url, data):
     headers = {"Content-Type": "application/json"}
     response = requests.post(url, headers=headers, json=data)
     return response
+
 
 def task(index):
     data = generate_data()
@@ -46,6 +49,7 @@ def task(index):
         print(f"Request {index} to {url} failed: {response.text}")
     else:
         print(f"Request {index} to {url} succeeded: {response.content}")
+
 
 def main():
     start_time = time.time()
@@ -61,6 +65,7 @@ def main():
 
     end_time = time.time()
     print(f"Sent 100000 requests in {end_time - start_time} seconds")
+
 
 if __name__ == "__main__":
     main()

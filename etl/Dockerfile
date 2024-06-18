@@ -1,4 +1,5 @@
 FROM python:3.11-slim-bookworm as builder
+ENV PYTHONUNBUFFERED=1 PYTHONPATH="$PYTHONPATH:/opt:/opt/src"
 
 WORKDIR /opt
 
@@ -19,11 +20,9 @@ RUN groupadd -r app  \
     && mkdir -p /opt/logs \
     && chown app:app -R /opt/
 
-COPY ./src ./src
+COPY . .
 
 RUN chmod +x ./entrypoint.sh
-
-EXPOSE 8000
 
 USER app
 

@@ -1,15 +1,12 @@
 import argparse
+
 from confluent_kafka.admin import AdminClient, KafkaException, NewTopic
-from schemas.base import KafkaTopic
+from src.schemas.base import KafkaTopic
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(
-        description="Create Kafka topics with specified parameters."
-    )
-    parser.add_argument(
-        "--bootstrap-servers", type=str, required=True, help="Kafka bootstrap servers"
-    )
+    parser = argparse.ArgumentParser(description="Create Kafka topics with specified parameters.")
+    parser.add_argument("--bootstrap-servers", type=str, required=True, help="Kafka bootstrap servers")
     parser.add_argument(
         "--num-partitions",
         type=int,
@@ -23,6 +20,7 @@ def parse_arguments():
         help="Replication factor for the topics",
     )
     return parser.parse_args()
+
 
 def main(args):
     """Создает Kafka топик с заданными параметрами."""
@@ -46,6 +44,7 @@ def main(args):
                 print(f"Failed to create topic {topic}: {e}")
     except KafkaException as ke:
         print(f"Failed to connect to Kafka broker: {ke}")
+
 
 if __name__ == "__main__":
     args = parse_arguments()

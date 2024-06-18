@@ -1,7 +1,7 @@
-from quart import request, Blueprint
+from quart import Blueprint, request
 from src.api.v1.action import action
-from src.schemas.base import Click, CustomEvent, Film, Page, QualityChange, KafkaTopic
 from src.core.producer import get_producer
+from src.schemas.base import Click, CustomEvent, Film, KafkaTopic, Page, QualityChange
 
 v1_router = Blueprint("v1", __name__)
 

@@ -9,16 +9,17 @@ class Settings(BaseSettings):
     )
 
     debug: bool = True
-    name: str = "ugc_service"
-    host: str = "ugc_service"
-    port: int = 5000
-    workers: int = 4
+    name: str = "etl_service"
+    host: str = "etl_service"
     log_level: str = "info"
 
     kafka_host: str
     kafka_num_partitions: int = 3
     kafka_replication_factor: int = 2
     kafka_acks: str = "all"
+
+    clickhouse_group: str = "clickhouse_group"
+    clickhouse_connection_url: str = "clickhouse://default:@localhost/default"
 
 
 settings = Settings()
