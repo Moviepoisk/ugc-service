@@ -1,91 +1,123 @@
 import asyncio
 import json
 from datetime import datetime, timezone
-
 from aiokafka import AIOKafkaConsumer, TopicPartition
 from asynch import connect
-from schema import SQL_CREATE_TABLE_CLICK, SQL_INSERT_INTO_TABLE_CLICK
+from schema import create_table_sql, insert_into_table_sql
 
 
-async def create_clickhouse_client():
-    client = await connect("clickhouse://default:@localhost/default")
-    async with client.cursor() as cursor:
-        await cursor.execute(SQL_CREATE_TABLE_CLICK)
-    return client
+class KafkaClickhouseETL:
+    def __init__(
+        self,
+        topics,
+        bootstrap_servers,
+        group_id,
+        flush_interval=5,
+        max_buffer_size=10000,
+    ):
+        self.topics = topics
+        self.bootstrap_servers = bootstrap_servers
+        self.group_id = group_id
+        self.flush_interval = flush_interval
+        self.max_buffer_size = max_buffer_size
+        self.buffer = {topic: [] for topic in topics}
+        self.messages = {topic: [] for topic in topics}
+        self.last_flush_time = datetime.now(timezone.utc)
+        self.consumer = None
+        self.clickhouse_client = None
 
+    async def connect_to_clickhouse(self):
+        self.clickhouse_client = await connect(
+            "clickhouse://default:@localhost/default"
+        )
+        async with self.clickhouse_client.cursor() as cursor:
+            for topic in self.topics:
+                await cursor.execute(create_table_sql(topic))
 
-async def consume_messages(consumer, buffer, messages):
-    async for msg in consumer:
-        if msg.value is not None:
-            message_value = msg.value.decode("utf-8")
-            if message_value.strip():  # Проверяем, что сообщение не пустое
-                try:
-                    data = json.loads(message_value)
-                    buffer.append((data["user_id"], data["timestamp"]))
-                    messages.append(
-                        msg
-                    )  # Добавляем сообщение в список для последующего подтверждения
-                    print(f"Buffered message: {data}")
-                except json.JSONDecodeError as e:
-                    print(
-                        f"Ошибка декодирования JSON: {e} - Содержимое: {message_value}"
-                    )
-                    continue
+    async def start_consumer(self):
+        self.consumer = AIOKafkaConsumer(
+            *self.topics,
+            bootstrap_servers=self.bootstrap_servers,
+            group_id=self.group_id,
+            enable_auto_commit=False,
+        )
+        await self.consumer.start()
+        print("Kafka consumer started.")
 
+    async def consume_messages(self):
+        async for msg in self.consumer:
+            topic = msg.topic
+            if msg.value is not None:
+                message_value = msg.value.decode("utf-8")
+                if message_value.strip():
+                    try:
+                        data = json.loads(message_value)
+                        # Convert datetime string to datetime object
+                        if "timestamp" in data:
+                            # Parse the original timestamp string
+                            dt = datetime.strptime(
+                                data["timestamp"], "%Y-%m-%dT%H:%M:%S.%f%z"
+                            )
+                            # Convert it to a string without timezone for ClickHouse
+                            data["timestamp"] = dt.strftime("%Y-%m-%d %H:%M:%S.%f")[
+                                :-3
+                            ]  # Truncate to millisecond precision
+                        # TO DO : убрать хард код сделать универсальным для всех схем Pydantic
+                        self.buffer[topic].append(
+                            (data["user_id"], data["timestamp"], json.dumps(data))
+                        )
 
-async def insert_data_periodically(cursor, buffer, consumer, messages):
-    while True:
-        await asyncio.sleep(10)
+                        self.messages[topic].append(msg)
+                        await self.maybe_flush_data()
+                    except json.JSONDecodeError as e:
+                        print(f"Error decoding JSON: {e} - Content: {message_value}")
+
+    async def maybe_flush_data(self):
         current_time = datetime.now(timezone.utc)
-        print(f"Buffer length: {len(buffer)}")
+        if (
+            current_time - self.last_flush_time
+        ).total_seconds() > self.flush_interval or any(
+            len(buf) >= self.max_buffer_size for buf in self.buffer.values()
+        ):
+            await self.flush_data()
 
-        if buffer:
-            print(f"Inserting {len(buffer)} messages into ClickHouse.")
-            await cursor.execute(SQL_INSERT_INTO_TABLE_CLICK, buffer)
-            buffer.clear()
-            print(f"Data inserted at {current_time}")
+    async def flush_data(self):
+        async with self.clickhouse_client.cursor() as cursor:
+            for topic, data in self.buffer.items():
+                if data:
+                    query = insert_into_table_sql(topic) + ",".join(
+                        f"('{item[0]}', '{item[1]}', '{item[2]}')" for item in data
+                    )
+                    await cursor.execute(query)
+                    self.buffer[topic].clear()
+                    # TO DO  не отображается число сообщений записанных в базу
+                    print(f"Flushed {len(data)} records for topic {topic}.")
+            self.last_flush_time = datetime.now(timezone.utc)
+            await self.commit_offsets()
 
-            # Подтверждение смещений после успешной вставки данных
-            offsets = {
-                TopicPartition(msg.topic, msg.partition): msg.offset + 1
-                for msg in messages
-            }
-            await consumer.commit(offsets)
-            messages.clear()
-            print("Offsets committed.")
+    async def commit_offsets(self):
+        offsets = {
+            TopicPartition(msg.topic, msg.partition): msg.offset + 1
+            for topic_msgs in self.messages.values()
+            for msg in topic_msgs
+        }
+        await self.consumer.commit(offsets)
+        for msgs in self.messages.values():
+            msgs.clear()
 
-
-async def consume_and_insert():
-    consumer = AIOKafkaConsumer(
-        "user_clicks",
-        bootstrap_servers="localhost:9094",
-        group_id="clickhouse_group",
-        enable_auto_commit=False,  # Отключаем автоматическое подтверждение
-    )
-    await consumer.start()
-    print("Kafka consumer started.")
-    clickhouse_client = await create_clickhouse_client()
-    print("Connected to ClickHouse.")
-    buffer = []
-    messages = []
-
-    async with clickhouse_client.cursor() as cursor:
-        consumer_task = asyncio.create_task(
-            consume_messages(consumer, buffer, messages)
-        )
-        insert_task = asyncio.create_task(
-            insert_data_periodically(cursor, buffer, consumer, messages)
-        )
-
-        await asyncio.gather(consumer_task, insert_task)
-
-    await consumer.stop()
-    print("Kafka consumer stopped.")
-
-
-async def main():
-    await consume_and_insert()
+    async def run(self):
+        await self.connect_to_clickhouse()
+        await self.start_consumer()
+        try:
+            await self.consume_messages()
+        finally:
+            await self.consumer.stop()
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    etl = KafkaClickhouseETL(
+        topics=["click", "custom_event", "film", "page", "quality_change"],
+        bootstrap_servers="localhost:9094",
+        group_id="clickhouse_group",
+    )
+    asyncio.run(etl.run())
