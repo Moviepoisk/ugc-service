@@ -56,10 +56,12 @@ class KafkaClickhouseETL:
                         self.buffer[topic].append(
                             {"user_id": data["user_id"], "timestamp": data["timestamp"]}
                         )
-                        await self.maybe_flush_data()
                         self.messages[topic].append(msg)
+                        await self.maybe_flush_data()
                     except json.JSONDecodeError as e:
                         print(f"Error decoding JSON: {e} - Content: {message_value}")
+                    except ValueError as e:
+                        print(f"Error parsing date: {e} - Content: {data['timestamp']}")
 
     async def maybe_flush_data(self):
         current_time = datetime.now(timezone.utc)
@@ -74,7 +76,12 @@ class KafkaClickhouseETL:
                 if data:
                     for record in data:
                         query = insert_into_table_sql(topic, record)
-                        await cursor.execute(query)
+                        # print(f"Executing query: {query}")  # Логирование запроса
+                        try:
+                            await cursor.execute(query)
+                        except Exception as e:
+                            print(f"Error executing query: {e}")
+                    
                     print(f"Flushed {len(self.buffer[topic])} records for topic {topic}.")
                     self.buffer[topic].clear()
             self.last_flush_time = datetime.now(timezone.utc)
