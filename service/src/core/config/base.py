@@ -1,14 +1,4 @@
-from enum import StrEnum
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
-class KafkaTopic(StrEnum):
-    CLICK = "click"
-    CUSTOM_EVENT = "custom_event"
-    FILM = "film"
-    PAGE = "page"
-    QUALITY_CHANGE = "quality_change"
 
 
 class Settings(BaseSettings):

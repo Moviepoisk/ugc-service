@@ -18,6 +18,13 @@ test_user_ids = [
     "8881d51e-e7e0-4f2d-b8fd-33dbbd92778f",
 ]
 
+endpoints = [
+    "http://localhost:5000/api/v1/click",
+    "http://localhost:5000/api/v1/quality",
+    "http://localhost:5000/api/v1/event",
+    "http://localhost:5000/api/v1/film",
+    "http://localhost:5000/api/v1/page",
+]
 
 def generate_data():
     user_id = random.choice(test_user_ids)
@@ -26,22 +33,19 @@ def generate_data():
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
-
-def send_request(data):
-    url = "http://localhost:5000/api/v1/click"
+def send_request(url, data):
     headers = {"Content-Type": "application/json"}
     response = requests.post(url, headers=headers, json=data)
     return response
 
-
 def task(index):
     data = generate_data()
-    response = send_request(data)
+    url = random.choice(endpoints)  # Случайный выбор конечной точки
+    response = send_request(url, data)
     if response.status_code != 200:
-        print(f"Request {index} failed: {response.text}")
+        print(f"Request {index} to {url} failed: {response.text}")
     else:
-        print(f"Request {index} succeeded: {response.content}")
-
+        print(f"Request {index} to {url} succeeded: {response.content}")
 
 def main():
     start_time = time.time()
@@ -57,7 +61,6 @@ def main():
 
     end_time = time.time()
     print(f"Sent 100000 requests in {end_time - start_time} seconds")
-
 
 if __name__ == "__main__":
     main()

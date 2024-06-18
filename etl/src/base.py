@@ -42,11 +42,15 @@ model_topic_map: Dict[str, Type[BaseData]] = {
 
 # Создание SQL запросов для создания таблиц
 def create_table_sql(topic: str) -> str:
-    return f"CREATE TABLE IF NOT EXISTS {topic} (user_id String, timestamp DateTime) ENGINE = MergeTree() ORDER BY timestamp;"
+    return f"""
+    CREATE TABLE IF NOT EXISTS {topic} (
+        user_id String,
+        timestamp DateTime
+    ) ENGINE = MergeTree() ORDER BY timestamp;
+    """
 
 # Создание SQL запросов для вставки данных
 def insert_into_table_sql(topic: str, record: Dict) -> str:
-    # Простой пример запроса для вставки данных
     fields = ', '.join(record.keys())
     values = ', '.join(f"'{value}'" if isinstance(value, str) else str(value) for value in record.values())
     return f"INSERT INTO {topic} ({fields}) VALUES ({values});"

@@ -1,7 +1,6 @@
 from quart import request, Blueprint
 from src.api.v1.action import action
-from src.core.config.base import KafkaTopic
-from src.schemas.base import Click, CustomEvent, Film, Page, QualityChange
+from src.schemas.base import Click, CustomEvent, Film, Page, QualityChange, KafkaTopic
 from src.core.producer import get_producer
 
 v1_router = Blueprint("v1", __name__)
@@ -11,7 +10,7 @@ v1_router = Blueprint("v1", __name__)
 async def click():
     data = await request.get_json()
     producer = get_producer()
-    result = await action(producer, data, Click, KafkaTopic.CLICK)
+    result = await action(producer, data, Click, KafkaTopic.CLICK.value)
     return result
 
 
@@ -19,7 +18,7 @@ async def click():
 async def quality():
     data = await request.get_json()
     producer = get_producer()
-    result = await action(producer, data, QualityChange, KafkaTopic.QUALITY_CHANGE)
+    result = await action(producer, data, QualityChange, KafkaTopic.QUALITY_CHANGE.value)
     return result
 
 
@@ -27,7 +26,7 @@ async def quality():
 async def event():
     data = await request.get_json()
     producer = get_producer()
-    result = await action(producer, data, CustomEvent, KafkaTopic.CUSTOM_EVENT)
+    result = await action(producer, data, CustomEvent, KafkaTopic.CUSTOM_EVENT.value)
     return result
 
 
@@ -35,7 +34,7 @@ async def event():
 async def film():
     data = await request.get_json()
     producer = get_producer()
-    result = await action(producer, data, Film, KafkaTopic.FILM)
+    result = await action(producer, data, Film, KafkaTopic.FILM.value)
     return result
 
 
@@ -43,5 +42,5 @@ async def film():
 async def page():
     data = await request.get_json()
     producer = get_producer()
-    result = await action(producer, data, Page, KafkaTopic.PAGE)
+    result = await action(producer, data, Page, KafkaTopic.PAGE.value)
     return result
