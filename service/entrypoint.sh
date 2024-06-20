@@ -8,7 +8,6 @@ python src/commands/create_topics.py \
   --num-partitions 3 \
   --replication-factor 2
 
-
 if [[ "$DEBUG" = "True" ]]
 then
   uvicorn src.main:app --host "$HOST" --port "$PORT" --reload --workers "$WORKERS" --log-level "$LOG_LEVEL"

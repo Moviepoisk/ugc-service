@@ -1,0 +1,5 @@
+aiokafka==0.10.0
+confluent-kafka==2.4.0
+pydantic==2.6.1
+pydantic-settings==2.0.2
+clickhouse-driver==0.2.7

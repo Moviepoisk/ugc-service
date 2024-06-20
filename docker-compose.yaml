@@ -15,5 +15,25 @@ services:
     logging: *default-logging
     volumes:
       - ./service/src:/opt/src
+#    ports:
+#      - "5000:5000"
     env_file:
       - .env
+
+  etl:
+    build:
+      context: ./etl
+    container_name: ETLService
+    logging: *default-logging
+    volumes:
+      - ./etl/src:/opt/src
+    env_file:
+      - .env
+    depends_on:
+      - kafka-0
+      - kafka-1
+      - kafka-2
+      - clickhouse-node1
+      - clickhouse-node2
+      - clickhouse-node3
+      - clickhouse-node4
