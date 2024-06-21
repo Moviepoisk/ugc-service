@@ -1,7 +1,10 @@
 import argparse
+import logging
 
 from confluent_kafka.admin import AdminClient, KafkaException, NewTopic
 from src.schemas.base import KafkaTopic
+
+logger = logging.getLogger(__name__)
 
 
 def parse_arguments():
@@ -39,11 +42,11 @@ def main(args):
         for topic, f in result.items():
             try:
                 f.result()
-                print(f"Topic '{topic}' created successfully.")
+                logger.info(f"Topic '{topic}' created successfully.")
             except Exception as e:
-                print(f"Failed to create topic {topic}: {e}")
+                logger.error(f"Failed to create topic {topic}: {e}")
     except KafkaException as ke:
-        print(f"Failed to connect to Kafka broker: {ke}")
+        logger.error(f"Failed to connect to Kafka broker: {ke}")
 
 
 if __name__ == "__main__":

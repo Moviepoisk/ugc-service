@@ -1,9 +1,13 @@
+import logging
 import random
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 
 import requests
+
+logger = logging.getLogger(__name__)
+
 
 test_user_ids = [
     "87f5b737-19ab-4059-bc59-746bddb6b6b0",
@@ -46,9 +50,9 @@ def task(index):
     url = random.choice(endpoints)  # Случайный выбор конечной точки
     response = send_request(url, data)
     if response.status_code != 200:
-        print(f"Request {index} to {url} failed: {response.text}")
+        logger.debug(f"Request {index} to {url} failed: {response.text}")
     else:
-        print(f"Request {index} to {url} succeeded: {response.content}")
+        logger.debug(f"Request {index} to {url} succeeded: {response.content}")
 
 
 def main():
@@ -61,10 +65,10 @@ def main():
             try:
                 future.result()
             except Exception as e:
-                print(f"Exception occurred: {e}")
+                logger.error(f"Exception occurred: {e}")
 
     end_time = time.time()
-    print(f"Sent 100000 requests in {end_time - start_time} seconds")
+    logger.debug(f"Sent 100000 requests in {end_time - start_time} seconds")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import asyncio
 
 from src.core.config import settings
+from src.core.logger import setup_logging
 from src.schemas.base import KafkaTopic
 from src.services.kafka_clickhouse import (
     ClickhouseConnectionManager,
@@ -9,6 +10,7 @@ from src.services.kafka_clickhouse import (
 )
 
 if __name__ == "__main__":
+    setup_logging(settings.debug)
     kafka_consumer_manager = KafkaConsumerManager(
         topics=[topic.value for topic in KafkaTopic],
         bootstrap_servers=settings.kafka_host,
