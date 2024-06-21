@@ -5,7 +5,11 @@ x-default-logging: &default-logging
   driver: json-file
 
 include:
-  - ./docker-compose-infra.yaml
+  - infra/clickhouse.yaml
+  - infra/nginx.yaml
+  - infra/kafka.yaml
+  - infra/zookeeper.yaml
+
 
 services:
   ugc_service:
@@ -15,10 +19,10 @@ services:
     logging: *default-logging
     volumes:
       - ./service/src:/opt/src
-#    ports:
-#      - "5000:5000"
     env_file:
       - .env
+    networks:
+      - common_network
 
   etl:
     build:
@@ -29,6 +33,8 @@ services:
       - ./etl/src:/opt/src
     env_file:
       - .env
+    networks:
+      - common_network
     depends_on:
       - kafka-0
       - kafka-1
@@ -37,3 +43,7 @@ services:
       - clickhouse-node2
       - clickhouse-node3
       - clickhouse-node4
+
+networks:
+  common_network:
+    driver: bridge

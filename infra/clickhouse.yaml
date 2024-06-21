@@ -1,0 +1,56 @@
+services:
+  clickhouse-node1:
+    image: clickhouse/clickhouse-server:23
+    container_name: clickhouse-node1
+    hostname: clickhouse-node1
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - ./clickhouse_settings/node1:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+    networks:
+      - common_network
+
+  clickhouse-node2:
+    image: clickhouse/clickhouse-server:23
+    container_name: clickhouse-node2
+    hostname: clickhouse-node2
+    ports:
+      - "8124:8123"
+      - "9001:9000"
+    volumes:
+      - ./clickhouse_settings/node2:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+    networks:
+      - common_network
+
+  clickhouse-node3:
+    image: clickhouse/clickhouse-server:23
+    container_name: clickhouse-node3
+    hostname: clickhouse-node3
+    ports:
+      - "8125:8123"
+      - "9002:9000"
+    volumes:
+      - ./clickhouse_settings/node3:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+    networks:
+      - common_network
+
+  clickhouse-node4:
+    image: clickhouse/clickhouse-server:23
+    container_name: clickhouse-node4
+    hostname: clickhouse-node4
+    ports:
+      - "8126:8123"
+      - "9003:9000"
+    volumes:
+      - ./clickhouse_settings/node4:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+    networks:
+      - common_network
