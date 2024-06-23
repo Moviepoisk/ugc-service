@@ -1,10 +1,13 @@
 import json
+import logging
 import re
 from datetime import datetime, timezone
 
 from aiokafka import ConsumerRecord, TopicPartition
 from src.schemas.base import insert_into_table_sql
 from src.services.base import ClickhouseConnectionManager, KafkaConsumerManager
+
+logger = logging.getLogger(__name__)
 
 
 class KafkaClickhouseETL:
@@ -22,6 +25,9 @@ class KafkaClickhouseETL:
         self.buffer: dict[str, list] = {topic: [] for topic in self.consumer_manager.topics}
         self.messages: dict[str, list[ConsumerRecord]] = {topic: [] for topic in self.consumer_manager.topics}
         self.last_flush_time = datetime.now(timezone.utc)
+        logger.debug(
+            f"Initialized KafkaClickhouseETL with flush_interval: {flush_interval}, max_buffer_size: {max_buffer_size}"
+        )
 
     async def check_and_flush_data(self) -> None:
         current_time = datetime.now(timezone.utc)
@@ -38,9 +44,9 @@ class KafkaClickhouseETL:
                     try:
                         await self.clickhouse_manager.execute_query(query)
                     except Exception as e:
-                        print(f"Error executing query: {e}")
+                        logger.error(f"Error executing query for topic {topic}: {e}")
 
-                print(f"Flushed {len(self.buffer[topic])} records for topic {topic}.")
+                logger.info(f"Flushed {len(self.buffer[topic])} records for topic {topic}.")
                 self.buffer[topic].clear()
         self.last_flush_time = datetime.now(timezone.utc)
         await self.commit_offsets()
@@ -54,23 +60,28 @@ class KafkaClickhouseETL:
         await self.consumer_manager.commit_offsets(offsets)
         for msgs in self.messages.values():
             msgs.clear()
+        logger.info(f"Committed offsets and cleared message buffers")
 
     async def process_message(self, msg: ConsumerRecord) -> None:
         topic = msg.topic
         message_value = self.decode_message(msg)
         if not message_value:
+            logger.warning(f"Failed to decode message: {msg}")
             return
 
         data = self.parse_message(message_value)
         if not data:
+            logger.warning(f"Failed to parse message: {message_value}")
             return
 
         if not self.validate_and_format_timestamp(data):
+            logger.warning(f"Failed to validate or format timestamp for message: {data}")
             return
 
         self.buffer[topic].append({"user_id": data["user_id"], "timestamp": data["timestamp"]})
         self.messages[topic].append(msg)
         await self.check_and_flush_data()
+        logger.debug(f"Processed message for topic {topic}")
 
     @staticmethod
     def decode_message(msg: ConsumerRecord) -> str | None:
@@ -84,7 +95,7 @@ class KafkaClickhouseETL:
         try:
             return json.loads(message_value)
         except json.JSONDecodeError as e:
-            print(f"Error decoding JSON: {e} - Content: {message_value}")
+            logger.error(f"Error decoding JSON: {e} - Content: {message_value}")
             return None
 
     @staticmethod
@@ -95,7 +106,7 @@ class KafkaClickhouseETL:
             data["timestamp"] = dt.strftime("%Y-%m-%d %H:%M:%S")
             return True
         else:
-            print(f"Invalid or missing timestamp: {timestamp}")
+            logger.error(f"Invalid or missing timestamp: {timestamp}")
             return False
 
     @staticmethod
@@ -111,3 +122,4 @@ class KafkaClickhouseETL:
                 await self.process_message(msg)
         finally:
             await self.consumer_manager.stop()
+            logger.info("ETL run completed")
