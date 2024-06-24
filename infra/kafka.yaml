@@ -68,6 +68,7 @@ services:
     environment:
       - KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS=kafka-0:9092
       - KAFKA_CLUSTERS_0_NAME=kraft
+      - SERVER_SERVLET_CONTEXT_PATH=/ui # чтобы через nginx ui работал
     networks:
       - common_network
 
