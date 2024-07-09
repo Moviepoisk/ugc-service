@@ -9,6 +9,8 @@ include:
   - infra/nginx.yaml
   - infra/kafka.yaml
   - infra/zookeeper.yaml
+  - infra/mongo_db.yaml
+  - infra/elk.yaml
 
 
 services:

@@ -11,3 +11,8 @@ curl -X POST http://localhost:5000/api/v1/click -H "Content-Type: application/js
 # тест api запись сообщения можно через скрипт
 cd /service/src/commands
 python -m benchmark
+
+
+# инициализация mongo_db кластера
+chmod +x setup_mongo_cluster.sh
+./setup_mongo_cluster.sh
