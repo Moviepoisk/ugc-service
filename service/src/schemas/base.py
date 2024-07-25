@@ -58,5 +58,8 @@ def create_table_sql(topic: str) -> str:
 def insert_into_table_sql(topic: str, record: Dict) -> str:
     # Простой пример запроса для вставки данных
     fields = ", ".join(record.keys())
-    values = ", ".join(f"'{value}'" if isinstance(value, str) else str(value) for value in record.values())
+    values = ", ".join(
+        f"'{value}'" if isinstance(value, str) else str(value)
+        for value in record.values()
+    )
     return f"INSERT INTO {topic} ({fields}) VALUES ({values});"
