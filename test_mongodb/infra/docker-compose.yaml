@@ -1,0 +1,23 @@
+include:
+  - ./mongodb/docker-compose.yml
+
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: ./infra/app/Dockerfile
+    container_name: Test-MongoDB
+    depends_on:
+      - mongodb
+    volumes:
+      - ../src:/app/src
+      - ../main.py:/app/main.py
+      - ../infra/app:/app/infra
+    environment:
+      PYTHONUNBUFFERED: 1
+      PYTHONPATH: /app/src
+      HOST: mongodb
+      PORT: 27017
+      MOVIE_AMOUNT: 10000
+      USER_AMOUNT: 1000
