@@ -11,7 +11,9 @@ producer: AIOKafkaProducer | None = None
 async def start_producer():
     global producer
     try:
-        producer = AIOKafkaProducer(bootstrap_servers=settings.kafka_host, acks=settings.kafka_acks)
+        producer = AIOKafkaProducer(
+            bootstrap_servers=settings.kafka_host, acks=settings.kafka_acks
+        )
         await producer.start()
         logger.info("Kafka producer started successfully.")
     except Exception as e:

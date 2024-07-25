@@ -8,8 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Create Kafka topics with specified parameters.")
-    parser.add_argument("--bootstrap-servers", type=str, required=True, help="Kafka bootstrap servers")
+    parser = argparse.ArgumentParser(
+        description="Create Kafka topics with specified parameters."
+    )
+    parser.add_argument(
+        "--bootstrap-servers", type=str, required=True, help="Kafka bootstrap servers"
+    )
     parser.add_argument(
         "--num-partitions",
         type=int,
