@@ -8,11 +8,17 @@ services:
   nginx:
     image: nginx:1.23.2
     container_name: Nginx
-    logging: *default-logging
+    #logging: *default-logging
+    logging: #logstash
+        driver: gelf
+        options:
+          gelf-address: udp://127.0.0.1:5044
+          tag: nginx 
     restart: always
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - /tmp/logs/nginx/:/var/log/nginx/
     networks:
       - common_network
     ports:
