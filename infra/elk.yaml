@@ -16,9 +16,7 @@ services:
         hard: -1
     volumes:
       - esdata:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
-      - 9300:9300
+    # Удалены проброшенные порты
     networks:
       - common_network
     deploy:
@@ -34,7 +32,8 @@ services:
       - elasticsearch
     environment:
       XPACK_MONITORING_ENABLED: "false"
-      ES_HOST: "http://elasticsearch:9200"
+      ES_HOST: "http://elasticsearch:9200"  # Используем имя сервиса как хост
+    # Оставляем порт 5044, так как он может быть нужен для приема логов
     ports:
       - "5044:5044/udp"
     volumes:
@@ -49,9 +48,8 @@ services:
     depends_on:
       - elasticsearch
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    ports:
-      - "5601:5601"
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200  # Используем имя сервиса как хост
+    # Удален проброшенный порт
     networks:
       - common_network
 
